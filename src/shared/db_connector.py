@@ -21,3 +21,20 @@ class database():
         
         except Exception as e:     
             print(f"[ERROR] An error occured while working with database.execute_query as {e}")
+
+    def fetch_data(self,query:str | None=None):
+        if query == None:
+            print("Nothing was passed in the database.fetch_data")
+        try:
+            cursor = self.connector.cursor()
+            if not query.lower().startswith("select"):
+                return 0
+            cursor.execute()
+            query_data = cursor.fetchall()
+
+            data = []
+            
+
+
+        except Exception as e:
+            raise e 
