@@ -7,5 +7,3 @@ def email_verifier(email: str):
             return "Not Accessible"
             break
     return "Accessible"
-
-print(email_verifier("karanjajoria.!965@gmail.com"))
