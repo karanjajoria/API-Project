@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Request
 from src.shared.helper import email_verifier
+# from dtos import User
 
 app = FastAPI()
 
 # New user
-@app.post("/newuser")
-def new_user(requsts: Request):
-    return 0
+# @app.post("/newuser")
+# def new_user(user: User):
+#     return 0
 
 # Roles
 @app.get("/roles")

@@ -2,5 +2,4 @@ from fastapi import FastAPI, Query, Request
 from typing import Optional
 
 from src.routers.users import *
-
-print("Import done")
+from src.shared.db_connector import connect_to_db

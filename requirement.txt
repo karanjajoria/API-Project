@@ -1,3 +1,4 @@
 fastapi[standard]
 dotenv
 requests
+db-sqlite3
