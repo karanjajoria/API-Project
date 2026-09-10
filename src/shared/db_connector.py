@@ -32,9 +32,7 @@ class database():
             cursor.execute()
             query_data = cursor.fetchall()
 
-            data = []
-            
-
+            return query_data
 
         except Exception as e:
             raise e 
