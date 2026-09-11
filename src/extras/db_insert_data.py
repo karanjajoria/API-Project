@@ -1,4 +1,4 @@
-from src.shared.db_connector import database
+from shared.db_connector import database
 
 # try:
 #     import sqlite3 as sql

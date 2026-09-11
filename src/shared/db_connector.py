@@ -29,7 +29,8 @@ class database():
             cursor = self.connector.cursor()
             if not query.lower().startswith("select"):
                 return 0
-            cursor.execute()
+
+            cursor.execute(query)
             query_data = cursor.fetchall()
 
             return query_data
