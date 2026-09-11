@@ -14,3 +14,11 @@ class User(BaseModel):
     backup_mail: str | None=None
     recovery_code:str | None=None
 
+class passport(BaseModel):
+    name: str
+    dob: str
+    gender: str
+    place_of_issue: str
+    mrz:str
+    date_of_issue: str
+    date_of_expiry: str

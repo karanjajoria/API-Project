@@ -1,29 +1,12 @@
 from fastapi import FastAPI, Request
 from src.shared.helper import email_verifier
 import sqlite3 as sql
+from src.dtos import passport
 # from dtos import User
 
 app = FastAPI()
 
-# New user
-# @app.post("/newuser")
-# def new_user(user: User):
-#     return 0
 
-# # Roles
-# @app.get("/roles")
-# def get_roles():
-#     return 0
-
-# # username
-# @app.get("/username")
-# def get_username():
-#     return 0
-
-# #password
-# @app.get("/password")
-# def get_password():
-#     return 0
 
 # Welcome Page
 @app.get("/")
@@ -48,3 +31,19 @@ def get_passport_data(name:str):
             "Date of Issue": data[4], 
             "Date of Expiry": data[5]
         }
+
+#insert into database
+@app.post("/passport")
+def insert_into_db(data: passport):
+    db = sql.connect("src/Database/user.db")
+    cursor = db.cursor()
+    query = data.model_dump()
+    cursor.execute(f"insert into passport_table values ('{query.get('name')}','{query.get('dob')}','{query.get('gender')}','{query.get('place_of_issue')}','{query.get('date_of_issue')}','{query.get('date_of_expiry')}','{query.get('mrz')}')")
+    fetcher = cursor.fetchall()
+    db.commit()
+    return {"Status": "OK",
+            "Method": "POST",
+            "Query": query,
+            "fetcher":fetcher,
+            "Msg": "Data has been added to database"
+            }
