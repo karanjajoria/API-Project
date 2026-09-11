@@ -1,13 +1,19 @@
 # Test file to check and verify token generation using random function
 import random
 import math
-from src.Database.token import used_tokens
+import sqlite3 as sql
 
-def create_token():
-    token  = random.randint(100000,999999)
-    if token in used_tokens:
-        return create_token()
-    used_tokens.add(token)
-    return token
+db = sql.connect("src/Database/User.db")
+table = "Tokens"
 
-print(create_token())
+cursor = db.cursor()
+cursor.execute(f"Select * from {table}")
+data = cursor.fetchall()
+serial_number = data[-1][0]
+
+def Generate():
+    token = random.randint(100000,999999)
+    if token in data:
+        Generate()
+    cursor.execute(f"Insert into {table} values ({serial_number +1},{token})")
+    db.commit()

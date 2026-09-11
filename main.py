@@ -4,7 +4,7 @@ import requests
 
 from src.routers.users import *
 from src.shared.db_connector import database
-from src.shared.token_generator import create_token
+from src.shared.token_generator import Generate
 
-print(create_token())
+print(Generate())
 
