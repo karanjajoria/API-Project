@@ -38,28 +38,39 @@ class database():
         except Exception as e:
             raise e 
 
+LATEST_CAPTURE = {
+    "available": False,
+    "timestamp": None,
+    "token": None,
+    "frame_path": None,
+    "face_crop_path": None,
+    "icao_crop_path": None,
+    "frame_base64": None,
+    "face_crop_base64": None,
+    "icao_crop_base64": None,
+}
+
+Token = "Tokens"
+Passport = "Passports"
+Camera = "Camera"
+
 class Database:
-    def __init__(self,db_path:str, table_name:str):
-        self.table = table_name
-        self.db = sql.connect(db_path)
+    def __init__(self, db:str, data = LATEST_CAPTURE):
+        self.data = LATEST_CAPTURE
+        self.db = sql.connect(db)
+        self.cursor = self.db.cursor()
 
-
-    def execute(self,db,data:dict):
-        '''
-        data = {
-            "available": False,
-            "timestamp": None,
-            "token": None,
-            "frame_path": None,
-            "face_crop_path": None,
-            "icao_crop_path": None,
-            "frame_base64": None,
-            "face_crop_base64": None,
-            "icao_crop_base64": None,
-        }
-        '''
-        cursor = self.db.cursor()
+    def execute_query(self):
         try:
-            cursor.execute(f"INSERT INTO {self.table} VALUES('{data.get("token")}', '{data.get("icao_crop_base64")}')")
+            passport = Passport
+            token = Token
+            camera = Camera
+
+            data = self.cursor.execute(f"SELECT * FROM {token}")
+            data = data.fetchall()
+            serial_number = data[-1][0]
+
+            self.cursor.execute(f"Insert into {token} values ({serial_number + 1},'{self.data.get('token')}')")
+
         except Exception as e:
-            return f"There is an error {e}"
+            return f"An error has occured {e}"
