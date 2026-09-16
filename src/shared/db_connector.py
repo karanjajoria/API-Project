@@ -62,15 +62,19 @@ class Database:
 
     def execute_query(self):
         try:
-            passport = Passport
-            token = Token
-            camera = Camera
+            tokens = self.cursor.execute("Select t1.tokens, t2.tokens from tokens t1 left join camera t2 on t1.tokens = t2.tokens")
+            token_names = self.cursor.fetchall()
 
-            data = self.cursor.execute(f"SELECT tokens FROM {token}")
-            data = data.fetchall()
-            serial_number = data[-1]
+            token_length = len(token_names)
 
-            self.cursor.execute(f"Insert into {token} values ({serial_number + 1},'{self.data.get('token')}')")
+            if token_length == 0:
+                self.cursor.execute("Insert Into tokens values (0,0000000000)")
+                self.db.commit()  
+                self.execute_query()
+                                    
+            self.cursor.execute(f"Insert Into tokens values ({token_length + 1},{self.data.get("token")})")
+            self.cursor.execute(f"Insert Into Camera values ({self.data.get("token")},{self.data.get("frame(b64)")},{self.data.get("ICAO(b64)")},{self.data.get("timestamp")})")
+            self.db.commit()
 
         except Exception as e:
             return f"An error has occured {e}"
