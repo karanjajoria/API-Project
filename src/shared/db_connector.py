@@ -66,9 +66,9 @@ class Database:
             token = Token
             camera = Camera
 
-            data = self.cursor.execute(f"SELECT * FROM {token}")
+            data = self.cursor.execute(f"SELECT tokens FROM {token}")
             data = data.fetchall()
-            serial_number = data[-1][0]
+            serial_number = data[-1]
 
             self.cursor.execute(f"Insert into {token} values ({serial_number + 1},'{self.data.get('token')}')")
 
