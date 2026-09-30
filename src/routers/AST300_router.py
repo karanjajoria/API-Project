@@ -1,20 +1,3 @@
-"""
-Capture from the ACPL Capture API and decode the WSQ fingerprint image in one run.
-No copy-pasting base64 anywhere - everything happens in-process.
-
-    pip install requests urllib3 pillow wsq
-    python capture_and_decode.py
-
-Why this doesn't parse the ISO/IEC 19794-4 FIR header field-by-field: a real
-capture came back as version b"010\\x00", and its header layout genuinely
-differs from the b"020\\x00" layout documented in the standard's own reference
-library - not just the version string, actual field offsets shift. Rather than
-keep guessing at a vendor-specific variant, this instead searches for WSQ's own
-Start-of-Image marker (0xFFA0), which is self-delimiting: everything from that
-marker to the end of the record is a complete, standalone WSQ bitstream, which
-the `wsq` library (IDEMIA's Pillow plugin over NIST's own WSQ codec) decodes
-directly - regardless of how the FIR header around it is laid out.
-"""
 import base64
 import io
 import json
