@@ -2,20 +2,32 @@ import os
 import csv
 import glob
 from docling.document_converter import DocumentConverter
+# Native fallback fallback tool just in case it has hidden digital text layout stream
+from pypdf import PdfReader 
+
+def extract_fallback_text(pdf_path):
+    """Fallback parser if the advanced AI layout engine returns nothing."""
+    try:
+        reader = PdfReader(pdf_path)
+        text_slices = []
+        for page in reader.pages:
+            text = page.extract_text()
+            if text:
+                text_slices.append(text)
+        return "\n".join(text_slices).strip()
+    except Exception:
+        return ""
 
 def process_pdfs_to_csv(input_dir, output_csv_path):
-    # Initialize the Docling document converter
+    # Initialize Docling
     converter = DocumentConverter()
     
-    # Define the CSV headers
-    headers = ["file_name", "markdown_content"]
+    headers = ["file_name", "markdown_content", "extraction_status"]
     
-    # Open the CSV file for writing text layout rows safely
     with open(output_csv_path, mode="w", encoding="utf-8", newline="") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=headers)
         writer.writeheader()
         
-        # Find all PDF files in the specified directory
         pdf_pattern = os.path.join(input_dir, "*.pdf")
         pdf_files = glob.glob(pdf_pattern)
         
@@ -29,30 +41,42 @@ def process_pdfs_to_csv(input_dir, output_csv_path):
             file_name = os.path.basename(pdf_path)
             print(f"Processing: {file_name}...")
             
+            md_content = ""
+            status = "Success"
+            
             try:
-                # Convert the PDF using Docling
+                # 1. Main Docling Core execution
                 result = converter.convert(pdf_path)
+                md_content = result.document.export_to_markdown().strip()
                 
-                # Export structural data to Markdown text (ideal for structured CSV blocks)
-                md_content = result.document.export_to_markdown()
-                
-                # Write file tracking metrics and data rows
-                writer.writerow({
-                    "file_name": file_name,
-                    "markdown_content": md_content
-                })
-                
+                # 2. Check if Docling/RapidOCR came up completely empty
+                if not md_content or "RapidOCR returned empty" in md_content:
+                    print(f"  [Notice] Docling returned empty text for {file_name}. Trying quick local digital fallback...")
+                    fallback_text = extract_fallback_text(pdf_path)
+                    
+                    if fallback_text:
+                        md_content = fallback_text
+                        status = "Fallback (Digital Text Layer)"
+                    else:
+                        md_content = "[No text or structural elements detected on image pages]"
+                        status = "Empty/Scanned Page Warning"
+                        
             except Exception as e:
-                print(f"Error parsing {file_name}: {e}")
-                writer.writerow({
-                    "file_name": file_name,
-                    "markdown_content": f"Extraction failed: {str(e)}"
-                })
+                print(f"  [Error] Failed parsing {file_name}: {e}")
+                status = f"Error: {str(e)}"
+                md_content = "[Extraction Failed]"
                 
-    print(f"All datasets successfully saved to {output_csv_path}")
+            # Save the row to CSV cleanly
+            writer.writerow({
+                "file_name": file_name,
+                "markdown_content": md_content,
+                "extraction_status": status
+            })
+                
+    print(f"\nAll datasets processed. View metrics summary inside: {output_csv_path}")
 
-# Run the batch conversion
-pdf_folder_path = "./my_pdf_directory"  # Replace with your actual directory path
-destination_csv = "extracted_data.csv"
+# Run within your active environment folder structure
+pdf_folder_path = r"C:\Users\USER\Desktop\drive-download-20261104T070854Z-1-001"
+destination_csv = "./extracted_data3.csv"
 
 process_pdfs_to_csv(pdf_folder_path, destination_csv)
