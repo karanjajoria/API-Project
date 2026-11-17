@@ -1,0 +1,107 @@
+# ============================================================================
+# Configuration for scrape_benchmarkscientific.py
+#   python scrape_benchmarkscientific.py                 (uses ./config.yaml)
+#   python scrape_benchmarkscientific.py --config my.yaml
+# ============================================================================
+
+site:
+  base_url: "https://www.benchmarkscientific.com/"
+
+# ---------------------------------------------------------------------------
+# How pages are downloaded
+# ---------------------------------------------------------------------------
+http:
+  # auto       -> curl_cffi if installed, otherwise requests
+  # curl_cffi  -> impersonates real Chrome (pip install curl_cffi)
+  # requests   -> plain python-requests (usually blocked with 403)
+  # playwright -> real browser (pip install playwright; playwright install chromium)
+  #               NOTE: playwright always runs with workers = 1
+  engine: playwright
+  headed: true          # playwright only: show the browser window
+  workers: 4            # parallel downloads (curl_cffi / requests only)
+  delay: 0.3            # seconds to wait before every request
+  timeout: 30           # seconds per request
+  retries: 4            # attempts per page
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+
+# ---------------------------------------------------------------------------
+# Which products to scrape
+# ---------------------------------------------------------------------------
+discovery:
+  category_url_pattern: "/product-category/"
+  product_url_pattern: "/product/"
+  # Only scrape categories whose name or URL contains one of these words.
+  # Empty list = every category in the menu.   e.g.  include: ["vortex", "agarose"]
+  include: []
+  # Skip categories whose name or URL contains one of these words.
+  exclude: []
+  # Extra category (or listing) pages to scrape in addition to the menu ones.
+  extra_category_urls: []
+
+# ---------------------------------------------------------------------------
+# CSS selectors (first match wins). Edit these if the site layout changes.
+# Use null to let the script use its built-in automatic detection.
+# ---------------------------------------------------------------------------
+selectors:
+  product_links:
+    - "ul.products li a[href*='/product/']"
+  next_page: "a.next.page-numbers, link[rel='next'], a[rel='next']"
+  product_name: "h1.product_title, h1.entry-title, h1"
+  short_description: ".woocommerce-product-details__short-description"
+  sku: "span.sku"
+  image:
+    - ".woocommerce-product-gallery__image a[href]"
+    - ".woocommerce-product-gallery img"
+    - "meta[property='og:image']"
+  specs_table: null     # null = table under the "Specifications" heading
+  description: null     # null = auto (text block beside the specifications table)
+
+# ---------------------------------------------------------------------------
+# Field formatting
+# ---------------------------------------------------------------------------
+short_description:
+  bullet_prefix: "• "   # put in front of each bullet; "" for plain lines
+
+description:
+  min_length: 40        # ignore text blocks shorter than this (characters)
+
+specifications:
+  # cell    -> ONE "Specifications" column; the table is kept row-by-row
+  #            (same labels, same order, same text as on the website)
+  # columns -> one column per spec label (Speed Range, Orbit, Weight, ...)
+  mode: cell
+  row_template: "{label} | {value}"   # how one table row is written in 'cell' mode
+  row_separator: "\n"                 # between table rows in 'cell' mode
+
+# ---------------------------------------------------------------------------
+# Accessories ("Optional Accessories" section of each product)
+# ---------------------------------------------------------------------------
+accessories:
+  heading_keyword: "accessor"         # heading text that marks the section
+  item_selector: "li.product"         # one accessory card
+  title_selector: "h2, h3, .woocommerce-loop-product__title"
+  # true  -> also open every accessory's own page (slower) so the fields
+  #          {sku} {price} {short_description} are filled in
+  fetch_details: false
+  # Fields: {name} {image} {url} {sku} {price} {short_description}
+  template: "{name} | {image} | {url}"
+  separator: "\n"                     # between accessories inside the cell
+
+# ---------------------------------------------------------------------------
+# Output CSV  (a single file, one row per product)
+# ---------------------------------------------------------------------------
+output:
+  file: "benchmarkscientific_products.csv"
+  encoding: "utf-8-sig"               # utf-8-sig lets Excel show symbols like ™ correctly
+  # Column order + header names. Available fields:
+  #   product_name, short_description, product_image, sku,
+  #   accessories, specifications, description, product_url
+  columns:
+    - { field: product_name,       header: "Product Name" }
+    - { field: short_description,  header: "Short Description" }
+    - { field: product_image,      header: "Product Image" }
+    - { field: sku,                header: "SKU" }
+    - { field: accessories,        header: "Accessories" }
+    - { field: specifications,     header: "Specifications" }
+    - { field: description,        header: "Description" }
+    # - { field: product_url,      header: "Product URL" }
