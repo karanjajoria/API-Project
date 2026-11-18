@@ -26,13 +26,5 @@ class tools:
     def show(self):
         return self.df.head()
 
-sheet = tools("benchmarkscientific_products.csv")
-specifications = sheet.get_column_data("Specifications")
-
-if __name__ == "__main__":
-    parser = args.ArgumentParser(description="Tools for accessing CSV modifactions")
-    parser.add_argument("--data",help="Add filepath of .csv file")
-    arg = parser.parse_args()
-
-    if not (Path(args.data).is_dir()):
-        
+def main():
+    file_path = input("[USER INPUT] Enter file path to the CSV file: ")
